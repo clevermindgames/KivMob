@@ -1,14 +1,12 @@
 from kivy.utils import platform
 from kivy.logger import Logger
+from sys import exc_info
 
 if platform == 'android':
-    from jnius import autoclass, cast
-    from android.runnable import run_on_ui_thread
-    activity = autoclass('org.kivy.android.PythonActivity')
-    Cmd = autoclass('org.kivy.android.PythonActivity$AdCmd')
-    Handler = autoclass('org.kivy.android.PythonActivity').adHandler
-    Message = autoclass('android.os.Message')
-    Bundle = autoclass('android.os.Bundle')
+    try:
+        from android.runnable import run_on_ui_thread
+    except:
+         pass
 else:
     def run_on_ui_thread(x):
         pass
@@ -29,9 +27,11 @@ class AdMobBridge():
         Logger.info('KivMob: add_test_device() called.')
 
     def is_interstitial_loaded(self):
-        """ Add a test device.
-        """
         Logger.info('KivMob: is_interstitial_loaded() called.')
+        return False
+
+    def is_rewarded_loaded(self):
+        Logger.info('KivMob: is_rewarded_loaded() called.')
         return False
         
     def new_banner(self, options):
@@ -43,6 +43,11 @@ class AdMobBridge():
         """ Create a new interstitial ad.
         """
         Logger.info('KivMob: new_interstitial() called.')
+
+    def new_rewarded(self, unitID):
+        """ Create a new rewarded ad.
+        """
+        Logger.info('KivMob: new_rewarded() called.')
     
     def request_banner(self, options):
         """ Requests new banner ad.
@@ -53,6 +58,11 @@ class AdMobBridge():
         """ Requests new interstitial ad.
         """
         Logger.info('KivMob: request_interstitial() called.')
+
+    def request_rewarded(self):
+        """ Requests new rewarded ad.
+        """
+        Logger.info('KivMob: request_rewarded() called.')
         
     def show_banner(self):
         """ If possible, show banner ad.
@@ -61,12 +71,22 @@ class AdMobBridge():
         """
         Logger.info('KivMob: show_banner() called.')
 
+    def playerRewarded(self):
+        Logger.info('KivMob: playerRewarded() called.')        
+
     def show_interstitial(self):
         """ If possible, show interstitial ad.
 
         NOTE: You must call request_interstitial() beforehand!
         """
         Logger.info('KivMob: show_interstitial() called.')
+
+    def show_rewarded(self, reward_type=""):
+        """ If possible, show rewarded ad.
+
+        NOTE: You must call request_rewarded() beforehand!
+        """
+        Logger.info('KivMob: show_rewarded() called.')
     
     def destroy_banner(self):
         """ Destory current banner ad.
@@ -83,43 +103,83 @@ class AdMobBridge():
         """
         Logger.info('KivMob: hide_banner() called.')
 
+    def get_reward_type(self):
+        Logger.info('KivMob: get_reward_type() called.')
+        return ""
+
 
 class AndroidBridge(AdMobBridge):
     
     @run_on_ui_thread
     def __init__(self, appID):
         self._loaded = False
-        Handler.sendMessage(self._build_msg(Cmd.INIT_ADS.ordinal(),
+        self._rewarded_loaded = False
+        self._reward_type = ""
+
+        from jnius import autoclass, cast
+        self.activity = autoclass('org.kivy.android.PythonActivity')
+        self.Cmd = autoclass('org.kivy.android.PythonActivity$AdCmd')
+        self.Handler = autoclass('org.kivy.android.PythonActivity').adHandler
+        self.Message = autoclass('android.os.Message')
+        self.Bundle = autoclass('android.os.Bundle')
+
+        self.Handler.sendMessage(self._build_msg(self.Cmd.INIT_ADS.ordinal(),
                                             {"appID":appID}))
         
     @run_on_ui_thread
     def new_banner(self, options={}):
-        Handler.sendMessage(self._build_msg(
-            Cmd.NEW_BANNER.ordinal(), options))
+        self.Handler.sendMessage(self._build_msg(
+            self.Cmd.NEW_BANNER.ordinal(), options))
         
     @run_on_ui_thread
     def new_interstitial(self, unitID):
-        Handler.sendMessage(self._build_msg(
-            Cmd.NEW_INTERSTITIAL.ordinal(), {"unitID":unitID}))
+        self.Handler.sendMessage(self._build_msg(
+            self.Cmd.NEW_INTERSTITIAL.ordinal(), {"unitID":unitID}))
+
+    @run_on_ui_thread
+    def new_rewarded(self, unitID):
+        self.Handler.sendMessage(self._build_msg(
+            self.Cmd.NEW_REWARDED.ordinal(), {"unitID":unitID}))
 
     @run_on_ui_thread
     def add_test_device(self, deviceID):
-        Handler.sendMessage(self._build_msg(
-            Cmd.ADD_TEST_DEVICE.ordinal(), {"deviceID":deviceID}))
+        self.Handler.sendMessage(self._build_msg(
+            self.Cmd.ADD_TEST_DEVICE.ordinal(), {"deviceID":deviceID}))
 
     @run_on_ui_thread
     def request_banner(self, options={}):
-        Handler.sendMessage(self._build_msg(
-            Cmd.REQ_BANNER.ordinal(), options))
+        self.Handler.sendMessage(self._build_msg(
+            self.Cmd.REQ_BANNER.ordinal(), options))
         
     @run_on_ui_thread
     def request_interstitial(self, options={}):
-        Handler.sendMessage(self._build_msg(
-            Cmd.REQ_INTERSTITIAL.ordinal(), options))
+        self.Handler.sendMessage(self._build_msg(
+            self.Cmd.REQ_INTERSTITIAL.ordinal(), options))
+
+    @run_on_ui_thread
+    def request_rewarded(self):
+        self.Handler.sendMessage(self._build_msg(
+            self.Cmd.REQ_REWARDED.ordinal()))
 
     @run_on_ui_thread
     def _is_interstitial_loaded(self):
-        self._loaded = activity.isLoaded()
+        self._loaded = self.activity.isLoaded()
+
+    @run_on_ui_thread
+    def _is_rewarded_loaded(self):
+        self._rewarded_loaded = self.activity.isRewardedLoaded()
+
+    @run_on_ui_thread
+    def _get_reward_type(self):
+        self._reward_type = self.activity.getRewardType()
+
+    @run_on_ui_thread
+    def playerRewarded(self):
+        self.activity.playerRewarded()
+
+    def get_reward_type(self):
+        self._get_reward_type()
+        return self._reward_type
 
     def is_interstitial_loaded(self):
         # Values returned from run_on_ui_thread appear as
@@ -128,23 +188,33 @@ class AndroidBridge(AdMobBridge):
         self._is_interstitial_loaded()
         return self._loaded
 
+    def is_rewarded_loaded(self):
+        self._is_rewarded_loaded()
+        return self._rewarded_loaded
+
     @run_on_ui_thread
     def show_banner(self):
-        Handler.sendEmptyMessage(Cmd.SHOW_BANNER.ordinal())
+        self.Handler.sendEmptyMessage(self.Cmd.SHOW_BANNER.ordinal())
         
     @run_on_ui_thread
     def show_interstitial(self):
-        Handler.sendEmptyMessage(Cmd.SHOW_INTERSTITIAL.ordinal())
+        self.Handler.sendEmptyMessage(self.Cmd.SHOW_INTERSTITIAL.ordinal())
+
+    @run_on_ui_thread
+    def show_rewarded(self, reward_type=""):
+        self.Handler.sendMessage(self._build_msg(
+            self.Cmd.SHOW_REWARDED.ordinal(), {"reward_type": reward_type}))
+        
 
     @run_on_ui_thread
     def hide_banner(self):
-        Handler.sendEmptyMessage(Cmd.HIDE_BANNER.ordinal())
+        self.Handler.sendEmptyMessage(self.Cmd.HIDE_BANNER.ordinal())
 
     def _build_msg(self, ordinal, options):
         # Builds message to for controlling admob backend.
-        msg = Message.obtain()
+        msg = self.Message.obtain()
         msg.what = ordinal
-        bundle = Bundle()
+        bundle = self.Bundle()
         for key, value in options.iteritems():
             if isinstance(value, bool):
                 bundle.putBoolean(key,value)
@@ -178,27 +248,45 @@ class KivMob():
 
     def add_test_device(self, device):
         self.bridge.add_test_device(device)
-        
+
+    def get_reward_type(self):
+        return self.bridge.get_reward_type()
+    
     def new_banner(self, options={}):
         self.bridge.new_banner(options)
 
     def new_interstitial(self, options={}):
         self.bridge.new_interstitial(options)
 
+    def playerRewarded(self):
+        self.bridge.playerRewarded()
+
+    def new_rewarded(self, options={}):
+        self.bridge.new_rewarded(options)
+
     def is_interstitial_loaded(self):
         return self.bridge.is_interstitial_loaded()
+
+    def is_rewarded_loaded(self):
+        return self.bridge.is_rewarded_loaded()
 
     def request_banner(self, options={}):
         self.bridge.request_banner(options)
         
     def request_interstitial(self, options={}):
         self.bridge.request_interstitial(options)
+
+    def request_rewarded(self):
+        self.bridge.request_rewarded()
         
     def show_banner(self):
         self.bridge.show_banner()
 
     def show_interstitial(self):
         self.bridge.show_interstitial()
+
+    def show_rewarded(self, reward_type=""):
+        self.bridge.show_rewarded(reward_type)
 
     def destroy_banner(self):
         self.bridge.destroy_banner()

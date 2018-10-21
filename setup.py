@@ -1,12 +1,12 @@
 from setuptools import setup
 
-setup(name='kivmob',
-      version='1.1',
+setup(name='kivmob27',
+      version='1.2',
       description='Provides AdMob support for Kivy.',
-      url='http://github.com/MichaelStott/KivMob',
-      author='Michael Stott',
+      url='https://github.com/clevermindgames/KivMob27',
+      author='Michael Stott & Clever Mind Games',
       license='MIT',
-      py_modules=['kivmob'],
+      py_modules=['kivmob27'],
       install_requires=[
           'kivy',
       ],
