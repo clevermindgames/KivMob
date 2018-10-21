@@ -3,7 +3,7 @@
 Provides interface for [Kivy] applications to access [Google Admob] functionalty on Android devices.
 
   - No need to change internal Android project manifest templates, Java code, or manually add external libraries.
-  - Support for interstitial and banner ads.
+  - Support for interstitial, banner and Rewarded Video ads.
 
 ### Demo Screenshot
 
@@ -13,7 +13,7 @@ Provides interface for [Kivy] applications to access [Google Admob] functionalty
 
 ### Installation
 
-Download python-for-android-admob and install KivMob using the following commands.
+Download python-for-android-kivmob27 and install KivMob27 using the following commands.
 ```sh
 $ git clone https://github.com/clevermindgames/python-for-android-kivmob27.git
 $ pip install kivmob27
@@ -22,7 +22,7 @@ $ pip install kivmob27
 
 This tutorial assumes you are familiar with AdMob. Additionally, be sure that you have the latest version of [Buildozer] installed, as KivMob uses the android_new toolchain.
 
-Create a new directory. Copy the following and paste it into a new main.py file. Be sure to include your AdMob app ID, your test device ID, and interstitial ID.
+Create a new directory. Copy the following and paste it into a new main.py file. Be sure to include your AdMob app ID, your test device ID, REWARDED_ID and interstitial ID.
 
 ```python
 from kivmob27 import KivMob
@@ -66,9 +66,12 @@ KivMobTest().run()
 In the same directory, generate buildozer.spec and make the following changes.
 
 ```sh
-requirements = kivy, hostpython2, android, kivmob27
+android.api = 27
+android.minapi = 19
+requirements = kivy, hostpython2, android, kivmob27, jnius
 android.permissions = INTERNET, ACCESS_NETWORK_STATE
 android.p4a_dir = # dir/to/python-for-android-kivmob27/
+android.gradle_dependencies = 'com.google.android.gms:play-services-ads:16.0.0','com.android.support:appcompat-v7:26.1.0'
 ```
 
 To build and deploy the project, run the following command. Wait a few moments for the ad to load before pressing the button.
@@ -96,3 +99,4 @@ Look under the demo folder for a more extensive example for interstitials and ba
 [Google Admob]: <https://www.google.com/admob/>
 [Kivy]: <https://kivy.org/>
 [Buildozer]: <https://github.com/kivy/buildozer>
+[MichaelStott Kivmob]: <https://github.com/MichaelStott/KivMob>
