@@ -16,13 +16,13 @@ Provides interface for [Kivy] applications to access [Google Admob] functionalty
 Download python-for-android-kivmob27 and install KivMob27 using the following commands.
 ```sh
 $ git clone https://github.com/clevermindgames/python-for-android-kivmob27.git
-$ pip install kivmob27
 ```
 ### Tutorial & Build Instructions
 
 This tutorial assumes you are familiar with AdMob. Additionally, be sure that you have the latest version of [Buildozer] installed, as KivMob uses the android_new toolchain.
 
 Create a new directory. Copy the following and paste it into a new main.py file. Be sure to include your AdMob app ID, your test device ID, REWARDED_ID and interstitial ID.
+copy kivmob27.py from this repo to the same directory
 
 ```python
 from kivmob27 import KivMob
