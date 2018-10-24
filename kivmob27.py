@@ -1,6 +1,5 @@
 from kivy.utils import platform
 from kivy.logger import Logger
-from sys import exc_info
 
 if platform == 'android':
     try:
