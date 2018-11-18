@@ -68,7 +68,7 @@ In the same directory, generate buildozer.spec and make the following changes.
 ```sh
 android.api = 27
 android.minapi = 19
-requirements = kivy, hostpython2, android, kivmob27, jnius
+requirements = kivy, hostpython2, android, kivmob27, pyjnius
 android.permissions = INTERNET, ACCESS_NETWORK_STATE
 android.p4a_dir = # dir/to/python-for-android-kivmob27/
 android.gradle_dependencies = 'com.google.android.gms:play-services-ads:16.0.0','com.android.support:appcompat-v7:26.1.0'
